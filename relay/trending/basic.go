@@ -24,7 +24,7 @@ var (
 )
 
 // GetTrendingKind20 returns the top 20 trending posts of kind 20 from the last 24 hours
-func GetTrendingKind20(db *sql.DB) ([]Post, error) {
+func GetTrendingBasicKind20(db *sql.DB) ([]Post, error) {
 	if cached, ok := trendingCache.Get("trending_kind_20"); ok {
 		return cached.([]Post), nil
 	}

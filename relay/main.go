@@ -252,7 +252,7 @@ func main() {
 	mux.HandleFunc("/api/trending/kind20", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
-		trendingPosts, err := trending.GetTrendingKind20(db.DB.DB)
+		trendingPosts, err := trending.GetTrendingScoreKind20(db.DB.DB)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Error getting trending posts: %v", err), http.StatusInternalServerError)
 			return
