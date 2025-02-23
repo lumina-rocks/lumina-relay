@@ -1,0 +1,52 @@
+services:
+  relay:
+    depends_on:
+      postgres:
+        condition: service_healthy
+    build:
+      context: ./relay
+      target: final
+    ports:
+      - 3334:3334
+    environment:
+      RELAY_NAME: "LUMINA Relay"
+      RELAY_DESCRIPTION: "LUMINA Nostr Relay"
+      POSTGRES_URL: "postgres://postgres:postgres@postgres/postgres?sslmode=disable"
+    restart: unless-stopped
+  scraper:
+    depends_on:
+      - relay
+    build:
+      context: ./scraper
+    environment:
+      INPUT_RELAY: "wss://relay.nostr.band"
+      OUTPUT_RELAY: "ws://relay:3334"
+      KINDS: "[0,1,2,3,7,20,9735]"
+    restart: unless-stopped
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+  # pg_admin:
+  #   image: dpage/pgadmin4
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: example@example.com
+  #     PGADMIN_DEFAULT_PASSWORD: example
+  #   ports:
+  #     - 8080:80
+  #   depends_on:
+  #     - postgres
+  #   restart: unless-stopped
