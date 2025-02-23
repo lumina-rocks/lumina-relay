@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 )
 
-// GetTrendingKind20 returns the top 20 trending posts of kind 20 from the last 24 hours
+// GetTrendingScoreKind20 returns the top 20 trending posts of kind 20 from the last 24 hours
 func GetTrendingScoreKind20(db *sql.DB) ([]Post, error) {
 	if cached, ok := trendingCache.Get("trending_kind_20"); ok {
 		return cached.([]Post), nil
@@ -45,7 +45,7 @@ func GetTrendingScoreKind20(db *sql.DB) ([]Post, error) {
 			e.kind,
 			e.content,
 			e.tags,
-			COALESCE(s.trending_score, 0) as reaction_count
+			COALESCE(s.trending_score, 0.0) as reaction_count  -- Cast to float
 		FROM event e
 		LEFT JOIN scores s ON e.id = s.original_event_id
 		WHERE e.kind::text = '20'

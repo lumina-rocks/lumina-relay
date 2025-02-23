@@ -8,22 +8,12 @@ import (
 	"git.highperfocused.tech/highperfocused/lumina-relay/relay/cache"
 )
 
-type Post struct {
-	ID            string     `json:"id"`
-	PubKey        string     `json:"pubkey"`
-	CreatedAt     time.Time  `json:"created_at"`
-	Kind          string     `json:"kind"`
-	Content       string     `json:"content"`
-	Tags          [][]string `json:"tags"`
-	ReactionCount int        `json:"reaction_count"`
-}
-
 var (
 	trendingCache = cache.New()
 	cacheDuration = 5 * time.Minute
 )
 
-// GetTrendingKind20 returns the top 20 trending posts of kind 20 from the last 24 hours
+// GetTrendingBasicKind20 returns the top 20 trending posts of kind 20 from the last 24 hours
 func GetTrendingBasicKind20(db *sql.DB) ([]Post, error) {
 	if cached, ok := trendingCache.Get("trending_kind_20"); ok {
 		return cached.([]Post), nil
