@@ -20,7 +20,7 @@ func GetTrendingScoreKind20(db *sql.DB) ([]Post, error) {
 				COUNT(*) as count
 			FROM event e
 			CROSS JOIN LATERAL jsonb_array_elements(tags) as tags_expanded(value)
-			WHERE e.kind::text IN ('1', '6', '7')  -- replies, reposts, reactions
+			WHERE e.kind::text IN ('1', '6', '7','9735')  -- replies, reposts, reactions, zaps
 			AND e.created_at >= extract(epoch from now() - interval '24 hours')::bigint
 			AND tags_expanded.value->0 #>> '{}' = 'e'
 			GROUP BY tags_expanded.value->1 #>> '{}', e.kind::text, e.created_at
@@ -33,6 +33,7 @@ func GetTrendingScoreKind20(db *sql.DB) ([]Post, error) {
 						WHEN kind = '7' THEN count * 1.0  -- reactions weight
 						WHEN kind = '6' THEN count * 2.0  -- reposts weight
 						WHEN kind = '1' THEN count * 1.5  -- replies weight
+						WHEN kind = '9735' THEN count * 1.3  -- zaps weight
 					END / power((seconds_ago + 7200) / 3600, 1.8)  -- time decay
 				) as trending_score
 			FROM engagement
