@@ -1,4 +1,4 @@
-module git.v0l.io/highperfocused/scrapestr/relay
+module git.highperfocused.tech/highperfocused/lumina-relay/relay
 
 go 1.23.4
 

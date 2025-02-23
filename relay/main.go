@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"git.highperfocused.tech/highperfocused/lumina-relay/relay/trending"
 	"github.com/fiatjaf/eventstore/postgresql"
 	"github.com/fiatjaf/khatru"
 	"github.com/fiatjaf/khatru/policies"
@@ -251,67 +252,10 @@ func main() {
 	mux.HandleFunc("/api/trending/kind20", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
-		// This query joins kind 20 posts with their reactions (kind 7)
-		// and counts the number of reactions in the last 24 hours using lateral join
-		query := `
-			WITH reactions AS (
-				SELECT 
-					tags_expanded.value->1 #>> '{}' AS original_event_id,
-					COUNT(*) as reaction_count
-				FROM event e
-				CROSS JOIN LATERAL jsonb_array_elements(tags) as tags_expanded(value)
-				WHERE e.kind::text = '7' 
-				AND e.created_at >= extract(epoch from now() - interval '24 hours')::bigint
-				AND tags_expanded.value->0 #>> '{}' = 'e'
-				GROUP BY tags_expanded.value->1 #>> '{}'
-			)
-			SELECT 
-				e.id,
-				e.pubkey,
-				to_timestamp(e.created_at) as created_at,
-				e.kind,
-				e.content,
-				e.tags,
-				COALESCE(r.reaction_count, 0) as reaction_count
-			FROM event e
-			LEFT JOIN reactions r ON e.id = r.original_event_id
-			WHERE e.kind::text = '20'
-			AND e.created_at >= extract(epoch from now() - interval '24 hours')::bigint
-			ORDER BY reaction_count DESC, e.created_at DESC
-			LIMIT 20
-		`
-
-		rows, err := db.DB.Query(query)
+		trendingPosts, err := trending.GetTrendingKind20(db.DB.DB)
 		if err != nil {
-			http.Error(w, fmt.Sprintf("Error querying trending posts: %v", err), http.StatusInternalServerError)
+			http.Error(w, fmt.Sprintf("Error getting trending posts: %v", err), http.StatusInternalServerError)
 			return
-		}
-		defer rows.Close()
-
-		type TrendingPost struct {
-			ID            string     `json:"id"`
-			PubKey        string     `json:"pubkey"`
-			CreatedAt     time.Time  `json:"created_at"`
-			Kind          string     `json:"kind"`
-			Content       string     `json:"content"`
-			Tags          [][]string `json:"tags"`
-			ReactionCount int        `json:"reaction_count"`
-		}
-
-		var trendingPosts []TrendingPost
-		for rows.Next() {
-			var post TrendingPost
-			var tagsJSON []byte
-			if err := rows.Scan(&post.ID, &post.PubKey, &post.CreatedAt, &post.Kind, &post.Content, &tagsJSON, &post.ReactionCount); err != nil {
-				http.Error(w, fmt.Sprintf("Error scanning row: %v", err), http.StatusInternalServerError)
-				return
-			}
-			// Parse the tags JSON
-			if err := json.Unmarshal(tagsJSON, &post.Tags); err != nil {
-				http.Error(w, fmt.Sprintf("Error parsing tags: %v", err), http.StatusInternalServerError)
-				return
-			}
-			trendingPosts = append(trendingPosts, post)
 		}
 
 		response := map[string]interface{}{
