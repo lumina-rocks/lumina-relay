@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"time"
+
+	"git.highperfocused.tech/highperfocused/lumina-relay/relay/cache"
 )
 
 type Post struct {
@@ -16,8 +18,17 @@ type Post struct {
 	ReactionCount int        `json:"reaction_count"`
 }
 
+var (
+	trendingCache = cache.New()
+	cacheDuration = 5 * time.Minute
+)
+
 // GetTrendingKind20 returns the top 20 trending posts of kind 20 from the last 24 hours
 func GetTrendingKind20(db *sql.DB) ([]Post, error) {
+	if cached, ok := trendingCache.Get("trending_kind_20"); ok {
+		return cached.([]Post), nil
+	}
+
 	query := `
 		WITH reactions AS (
 			SELECT 
@@ -65,5 +76,6 @@ func GetTrendingKind20(db *sql.DB) ([]Post, error) {
 		trendingPosts = append(trendingPosts, post)
 	}
 
+	trendingCache.Set("trending_kind_20", trendingPosts, cacheDuration)
 	return trendingPosts, nil
 }
