@@ -77,7 +77,7 @@ func main() {
 			<head>
 				<meta charset="UTF-8">
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-				<title>Scrapestr Relay</title>
+				<title>LUMINA Relay</title>
 				<style>
 					body {
 						font-family: Arial, sans-serif;
@@ -152,7 +152,7 @@ func main() {
 			<head>
 				<meta charset="UTF-8">
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-				<title>Scrapestr Relay Stats</title>
+				<title>LUMINA Relay Stats</title>
 				<style>
 					body {
 						font-family: Arial, sans-serif;
