@@ -33,6 +33,8 @@ func main() {
 	relay.Info.PubKey = getEnv("RELAY_PUBKEY", "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798")
 	relay.Info.Description = getEnv("RELAY_DESCRIPTION", "LUMINA Relay")
 	relay.Info.Icon = getEnv("RELAY_ICON", "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fliquipedia.net%2Fcommons%2Fimages%2F3%2F35%2FSCProbe.jpg&f=1&nofb=1&ipt=0cbbfef25bce41da63d910e86c3c343e6c3b9d63194ca9755351bb7c2efa3359&ipo=images")
+	relay.Info.Software = "lumina-relay"
+	relay.Info.Version = "0.1.0"
 
 	// Print relay information
 	fmt.Printf("Name: %s\n", relay.Info.Name)
